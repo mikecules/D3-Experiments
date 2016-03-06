@@ -13,7 +13,6 @@
           .attr('width', _barchart._width)
           .attr('height', _barchart._height);
 
-
     }
 
     Barchart.prototype.render = function() {
@@ -23,25 +22,34 @@
 
         var newX1 = 0;
 
-        _barchart._svg.selectAll('rect.bar')
-          .data(_barchart._data)
-          .enter()
-          .append('rect')
-          .classed('bar', true)
-          .attr('x', function(d, i) {
-            var x = newX1;
-            newX1 = x + barWidth + barMargin;
-            return x;
-          })
-          .attr('width', barWidth)
-          .attr('height', function(d) {
+        var colourInterpolator = d3.scale.linear()
+          .domain([0,_barchart._height])
+          .interpolate(d3.interpolateRgb)
+          .range(["#000000", "#0000ff"]);
+
+        var groups = _barchart._svg.selectAll('g')
+          .data(_barchart._data);
+
+        groups.enter().append('g');
+
+        groups.attr('transform', function(d) {
+             var x = newX1;
+             newX1 = x + barWidth + barMargin;
+
+             return 'translate(' + newX1 + ', ' + (_barchart._height - d) + ')';
+         })
+        .html('').append('rect').classed('bar', true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .style('fill', function(d) { return colourInterpolator(d); })
+        .attr('width', barWidth)
+        .attr('height', function(d) {
             return d;
-          })
-          .attr('y', function(d) {
-              return _barchart._height - d;
-          })
+        });
 
+        groups.append('text').attr('fill', '#ffffff').attr('x', 3).attr('y', 15).text(function(d) {return d;});
 
+        groups.exit().remove();
 
     };
 
@@ -71,7 +79,17 @@
         var data = _generateData(30),
             barchart = new Barchart(document.getElementById(id), data);
 
+        _startAnimating(barchart);
+
+    }
+
+    function _startAnimating(barchart) {
+        barchart.data(_generateData(30));
         barchart.render();
+
+        setTimeout(function() {
+            _startAnimating(barchart);
+        }, 750);
     }
 
     _init('d3-container');
