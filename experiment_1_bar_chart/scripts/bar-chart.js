@@ -22,10 +22,7 @@
 
         var newX1 = 0;
 
-        var colourInterpolator = d3.scale.linear()
-          .domain([0,_barchart._height])
-          .interpolate(d3.interpolateRgb)
-          .range(["#000000", "#0000ff"]);
+        var colourInterpolator = _barchart._colourFn;
 
         var groups = _barchart._svg.selectAll('g')
           .data(_barchart._data);
@@ -37,18 +34,39 @@
              newX1 = x + barWidth + barMargin;
 
              return 'translate(' + newX1 + ', ' + (_barchart._height - d) + ')';
-         })
-        .html('').append('rect').classed('bar', true)
-        .attr('x', 0)
-        .attr('y', 0)
-        .style('fill', function(d) { return colourInterpolator(d); })
-        .attr('width', barWidth)
-        .attr('height', function(d) {
-            return d;
         });
 
-        groups.append('text').attr('fill', '#ffffff').attr('x', 3).attr('y', 15).text(function(d) {return d;});
+        var bars = groups.selectAll('rect.bar')
+          .data(function(d) {return [d]; });
 
+        bars.enter()
+          .append('rect')
+          .classed('bar', true)
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', barWidth);
+
+        bars
+          .attr('height', function(d) {
+            return d;
+          })
+          .transition()
+          .style('fill', function(d) { return colourInterpolator(d); });
+
+
+        var labels = groups.selectAll('text')
+          .data(function(d) {return [d]});
+
+        labels.enter().append('text')
+          .attr('x', 3)
+          .attr('y', 15)
+          .attr('fill', '#ffffff');
+
+        labels
+          .text(function(d) {return d;});
+
+        bars.exit().remove();
+        labels.exit().remove();
         groups.exit().remove();
 
     };
@@ -56,8 +74,12 @@
     Barchart.prototype.data = function(data) {
         var  _barchart = this;
 
-        if (arguments.length === 1) {
+        if (arguments.length === 1 && _.isArray(data)) {
             _barchart._data = data;
+            _barchart._colourFn = d3.scale.linear()
+              .domain([0,_barchart._height])
+              .interpolate(d3.interpolateRgb)
+              .range(["#000000", "#0000ff"]);
         }
 
         return _barchart._data;
