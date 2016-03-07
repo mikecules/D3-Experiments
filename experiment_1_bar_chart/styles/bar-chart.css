@@ -7,7 +7,7 @@
    padding: 0px 60px;
 }
 
-.bar {
+rect.bar {
     fill: blue;
 }
 

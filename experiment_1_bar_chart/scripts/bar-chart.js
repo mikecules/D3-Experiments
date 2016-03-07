@@ -15,6 +15,18 @@
           .attr('width', _barchart._width)
           .attr('height', _barchart._height);
 
+      _barchart._svg
+        .append('defs')
+        .append('clipPath')
+        .attr('clipPathUnits', 'userSpaceOnUse')
+        .attr('id', 'chartArea')
+        .append('rect')
+        .attr('fill', 'none')
+        .attr('x', _barchart._padding / 2)
+        .attr('y', _barchart._padding - 5)
+        .attr('width', _barchart._width - _barchart._padding * 2)
+        .attr('height', _barchart._height - _barchart._padding);
+
       // Create scale functions
       _barchart._yScale = d3.scale.linear()
         .domain([d3.max(data), 0])
@@ -30,8 +42,12 @@
       // Create Y axis
       _barchart._svg.append('g')
         .attr('class', 'axis')
-        .attr('transform', 'translate(40, ' + (_barchart._padding) +')')
+        .attr('transform', 'translate(40, ' + (_barchart._padding - 5) +')')
         .call(_barchart._yAxis);
+
+      _barchart._g = _barchart._svg.append('g')
+        .attr('clip-path', 'url(#chartArea)')
+        .attr('id', 'chart');
 
       _barchart._colourFn = d3.scale.linear()
         .domain([0,_barchart._height])
@@ -49,7 +65,7 @@
 
         var colourInterpolator = _barchart._colourFn;
 
-        var groups = _barchart._svg.selectAll('g.bar')
+        var groups = _barchart._g.selectAll('g.bar')
           .data(_barchart._data);
 
         groups.enter().append('g').classed('bar', true);
@@ -87,7 +103,7 @@
         .attr('transform', function(d, i) {
         var x = x1s[i];
         return 'translate(' +  (x /* move away from y-axis labels */) + ', ' +
-          (_barchart._height -_barchart._yScale(d)) + ')';
+          (_barchart._height -_barchart._yScale(d) - 5) + ')';
       });
 
         var labels = groups.selectAll('text')
