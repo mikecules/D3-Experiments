@@ -24,7 +24,7 @@
         .attr('fill', 'none')
         .attr('x', _barchart._padding / 2)
         .attr('y', _barchart._padding - 5)
-        .attr('width', _barchart._width - _barchart._padding * 2)
+        .attr('width', _barchart._width)
         .attr('height', _barchart._height - _barchart._padding);
 
       // Create scale functions
@@ -100,6 +100,9 @@
 
       groups.transition()
         .duration(500)
+        .delay(function(d, i) {
+          return i / _barchart._data.length * 1000;
+        })
         .attr('transform', function(d, i) {
         var x = x1s[i];
         return 'translate(' +  (x /* move away from y-axis labels */) + ', ' +
