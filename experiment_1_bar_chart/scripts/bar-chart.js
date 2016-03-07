@@ -30,7 +30,7 @@
       // Create Y axis
       _barchart._svg.append('g')
         .attr('class', 'axis')
-        .attr('transform', 'translate(40, 0)')
+        .attr('transform', 'translate(40, ' + (_barchart._padding) +')')
         .call(_barchart._yAxis);
 
       _barchart._colourFn = d3.scale.linear()
@@ -54,12 +54,15 @@
 
         groups.enter().append('g').classed('bar', true);
 
-        groups.attr('transform', function(d) {
-             var x = newX1;
-             newX1 = x + barWidth + barMargin;
+        var x1s = [];
 
-             return 'translate(' +  (newX1 + 20 /* move away from y-axis labels */) + ', ' +
-               (_barchart._height - _barchart._padding -_barchart._yScale(d)) + ')';
+        groups.attr('transform', function(d) {
+          newX1 += barWidth + barMargin;
+          var x = newX1 + 20;
+          x1s.push(x);
+
+           return 'translate(' +  x /* move away from y-axis labels */ + ', ' +
+             (_barchart._height + _barchart._padding) + ')';
         });
 
         var bars = groups.selectAll('rect.bar')
@@ -76,9 +79,16 @@
           .attr('height', function(d) {
             return _barchart._yScale(d);
           })
-          .transition()
           .style('fill', function(d) { return colourInterpolator(d); });
 
+
+      groups.transition()
+        .duration(500)
+        .attr('transform', function(d, i) {
+        var x = x1s[i];
+        return 'translate(' +  (x /* move away from y-axis labels */) + ', ' +
+          (_barchart._height -_barchart._yScale(d)) + ')';
+      });
 
         var labels = groups.selectAll('text')
           .data(function(d) {return [d]});
@@ -134,7 +144,7 @@
 
         setTimeout(function() {
             _startAnimating(barchart);
-        }, 750);
+        }, 2000);
     }
 
     _init('d3-container');
